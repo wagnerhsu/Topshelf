@@ -131,6 +131,11 @@ namespace Topshelf.HostConfigurators
             _settings.CanSessionChanged = true;
         }
 
+        public void EnablePowerEvents()
+        {
+            _settings.CanHandlePowerEvent = true;
+        }
+
         public void UseHostBuilder(HostBuilderFactory hostBuilderFactory)
         {
             _hostBuilderFactory = hostBuilderFactory;
@@ -187,6 +192,12 @@ namespace Topshelf.HostConfigurators
             _settings.ExceptionCallback = callback;
         }
 
+        public UnhandledExceptionPolicyCode UnhandledExceptionPolicy
+        {
+          get { return _settings.UnhandledExceptionPolicy; }
+          set { _settings.UnhandledExceptionPolicy = value; }
+        }
+
         public Host CreateHost()
         {
             Type type = typeof(HostFactory);
@@ -212,7 +223,7 @@ namespace Topshelf.HostConfigurators
             //Intercept exceptions from serviceBuilder, TopShelf handling is in HostFactory
             catch (Exception ex)
             {
-                builder.Settings?.ExceptionCallback(ex);
+                builder.Settings?.ExceptionCallback?.Invoke(ex);
                 throw;
             }
         }

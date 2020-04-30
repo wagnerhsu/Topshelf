@@ -66,7 +66,7 @@ namespace Topshelf.Runtime.Windows
 
             if (!_environment.IsServiceInstalled(_settings.ServiceName))
             {
-                string message = $"The {_settings} service has not been installed yet. Please run '{Assembly.GetEntryAssembly().GetName()} install'.";
+                string message = $"The {_settings.ServiceName} service has not been installed yet. Please run '{Assembly.GetEntryAssembly().GetName()} install'.";
                 _log.Fatal(message);
 
                 ExitCode = (int) TopshelfExitCode.ServiceNotInstalled;
@@ -77,12 +77,7 @@ namespace Topshelf.Runtime.Windows
 
             Run(this);
 
-            // this error code does not matter when running as a windows service
-            // the actual exit code is taken from the ServiceBase.ExitCode
-            // Windows service tooling already sees the service as stopped here -
-            // once ServiceBase.OnStop method exits, but the process is not yet finished here.
-            // even if we put Thread.Sleep(600000) the process will be killed after some timeout
-            return new TopshelfExitCode(ExitCode);
+            return (TopshelfExitCode) Enum.ToObject(typeof(TopshelfExitCode), ExitCode);
         }
 
         void HostControl.RequestAdditionalTime(TimeSpan timeRemaining)
@@ -90,13 +85,6 @@ namespace Topshelf.Runtime.Windows
             _log.DebugFormat("Requesting additional time: {0}", timeRemaining);
 
             RequestAdditionalTime((int) timeRemaining.TotalMilliseconds);
-        }
-
-        void HostControl.Restart()
-        {
-            _log.Fatal("Restart is not yet implemented");
-
-            throw new NotImplementedException("This is not done yet, so I'm trying");
         }
 
         void HostControl.Stop()
@@ -325,7 +313,13 @@ namespace Topshelf.Runtime.Windows
         {
             _settings.ExceptionCallback?.Invoke((Exception) e.ExceptionObject);
 
+            if (_settings.UnhandledExceptionPolicy == UnhandledExceptionPolicyCode.TakeNoAction)
+              return;
+
             _log.Fatal("The service threw an unhandled exception", (Exception) e.ExceptionObject);
+
+            if (_settings.UnhandledExceptionPolicy == UnhandledExceptionPolicyCode.LogErrorOnly)
+              return;
 
             HostLogger.Shutdown();
 

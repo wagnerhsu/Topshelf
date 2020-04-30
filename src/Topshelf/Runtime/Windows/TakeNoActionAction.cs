@@ -10,29 +10,35 @@
 // under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR 
 // CONDITIONS OF ANY KIND, either express or implied. See the License for the 
 // specific language governing permissions and limitations under the License.
-namespace Topshelf
+namespace Topshelf.Runtime.Windows
 {
     using System;
 
     /// <summary>
-    /// Allows the service to control the host while running
+    /// Represents a take no action recovery action.
     /// </summary>
-    public interface HostControl
+    public class TakeNoActionAction :
+        ServiceRecoveryAction
     {
         /// <summary>
-        /// Tells the Host that the service is still starting, which resets the
-        /// timeout.
+        /// Initializes a new instance of the <see cref="TakeNoActionAction"/> class.
         /// </summary>
-        void RequestAdditionalTime(TimeSpan timeRemaining);
+        public TakeNoActionAction()
+            : base(TimeSpan.Zero)
+        {
+        }
 
         /// <summary>
-        /// Stops the Host
+        /// Gets the service recovery configuration action.
         /// </summary>
-        void Stop();
-
-        /// <summary>
-        /// Stops the Host, returning the specified exit code
-        /// </summary>
-        void Stop(TopshelfExitCode exitCode);
+        /// <returns>A <see cref="NativeMethods.SC_ACTION"/> representing the take no action service recovery configuration action.</returns>
+        public override NativeMethods.SC_ACTION GetAction()
+        {
+            return new NativeMethods.SC_ACTION
+            {
+                Delay = Delay,
+                Type = (int)NativeMethods.SC_ACTION_TYPE.None
+            };
+        }
     }
 }

@@ -134,6 +134,17 @@ namespace Topshelf.HostConfigurators
         }
 
         /// <summary>
+        /// Adds a take no action recovery action.
+        /// </summary>
+        /// <returns>The service recovery configurator.</returns>
+        public ServiceRecoveryConfigurator TakeNoAction()
+        {
+            Options.AddAction(new TakeNoActionAction());
+
+            return this;
+        }
+
+        /// <summary>
         /// Sets the recovery reset period in days.
         /// </summary>
         /// <param name="days">The reset period in days.</param>
@@ -156,7 +167,7 @@ namespace Topshelf.HostConfigurators
         void ConfigureServiceRecovery(InstallHostSettings installSettings)
         {
             var controller = new WindowsServiceRecoveryController();
-            controller.SetServiceRecoveryOptions(_settings, _options);
+            controller.SetServiceRecoveryOptions(installSettings, _options);
         }
     }
 }
